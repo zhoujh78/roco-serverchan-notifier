@@ -2,6 +2,11 @@ name: Scheduled Push
 
 on:
   workflow_dispatch:
+    inputs:
+      test_gmail:
+        description: "Send one Gmail test email"
+        type: boolean
+        default: false
   schedule:
     # Beijing/Hong Kong 08:05, 12:05, 16:05, 20:05.
     - cron: "5 0,4,8,12 * * *"
@@ -28,6 +33,9 @@ jobs:
       PUSHPLUS_TOKEN: ${{ secrets.PUSHPLUS_TOKEN }}
       PUSHPLUS_TOPIC: ${{ vars.PUSHPLUS_TOPIC }}
       PUSHPLUS_CHANNEL: ${{ vars.PUSHPLUS_CHANNEL }}
+      GMAIL_EMAIL: ${{ secrets.GMAIL_EMAIL }}
+      GMAIL_APP_PASSWORD: ${{ secrets.GMAIL_APP_PASSWORD }}
+      GMAIL_TO: ${{ secrets.GMAIL_TO }}
       WECOM_CORPID: ${{ secrets.WECOM_CORPID }}
       WECOM_SECRET: ${{ secrets.WECOM_SECRET }}
       WECOM_AGENTID: ${{ secrets.WECOM_AGENTID }}
@@ -75,4 +83,25 @@ jobs:
         run: uv sync --frozen
 
       - name: Run push once
+        if: ${{ !inputs.test_gmail }}
         run: uv run python main.py
+
+      - name: Send Gmail test email
+        if: ${{ inputs.test_gmail }}
+        run: |
+          uv run python - <<'PY'
+          from roco_serverchan_notifier.env_providers import env_provider
+          from roco_serverchan_notifier.push import send_provider
+          from roco_serverchan_notifier.push_models import NotificationMessage
+
+          provider = env_provider("gmail")
+          if provider is None:
+              raise SystemExit("Set GMAIL_EMAIL and GMAIL_APP_PASSWORD in Actions Secrets.")
+          result = send_provider(
+              provider,
+              NotificationMessage("远行商人 Gmail 测试", "这是一封 GitHub Actions 测试邮件。", ""),
+              timeout=30,
+          )
+          print(result.message)
+          raise SystemExit(0 if result.success else 1)
+          PY
