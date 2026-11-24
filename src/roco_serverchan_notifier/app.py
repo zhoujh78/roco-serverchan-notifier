@@ -12,6 +12,8 @@ from .push_models import DeliveryOptions, NotificationMessage
 from .rocom import fetch_merchant_data, process_merchant_data
 from .settings import Settings
 
+WATCHED_PRODUCT_NAMES = frozenset({"国王球", "炫彩精灵蛋", "祝福项坠"})
+
 
 @dataclass(frozen=True)
 class RunResult:
@@ -63,19 +65,13 @@ def run_once(settings: Settings) -> RunResult:
             timeout=settings.http_timeout,
         )
     except Exception as exc:
-        message = f"无法获取远行商人数据: {exc}"
-        print(message)
-        report = _send_and_log(
-            settings,
-            NotificationMessage("远行商人监控异常", message, message),
-            session,
-        )
-        return RunResult(1, report)
+        print(f"无法获取远行商人数据: {exc}")
+        return RunResult(1)
 
     processed = process_merchant_data(raw_data)
     products = processed.get("products") or []
-    if not products and not settings.notify_empty:
-        print("当前暂无活跃商品，已按 NOTIFY_EMPTY=false 跳过推送")
+    if not any(product["name"] in WATCHED_PRODUCT_NAMES for product in products):
+        print("当前在售商品未命中目标商品，跳过推送")
         return RunResult(0)
 
     message = build_notification_message(processed, include_price_info=settings.include_price_info)
