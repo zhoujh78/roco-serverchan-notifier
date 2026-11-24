@@ -4,6 +4,7 @@ from .bark import send_bark
 from .discord import send_discord
 from .dingtalk_bot import send_dingtalk_bot
 from .feishu_bot import send_feishu_bot
+from .gmail import send_gmail
 from .gotify import send_gotify
 from .ntfy import send_ntfy
 from .pushplus import send_pushplus
@@ -27,4 +28,5 @@ PROVIDER_SENDERS = {
     "feishu_bot": send_feishu_bot,
     "ntfy": send_ntfy,
     "gotify": send_gotify,
+    "gmail": send_gmail,
 }
