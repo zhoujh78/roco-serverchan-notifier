@@ -109,7 +109,7 @@ class ImageRenderingAppTests(RocoTestCase):
     def setUp(self):
         self.processed = {
             "title": "远行商人",
-            "products": [{"name": "咕噜球", "time_label": "08:00-12:00"}],
+            "products": [{"name": "国王球", "time_label": "08:00-12:00"}],
             "round_info": {"current": 1, "total": 4, "countdown": "01:00:00"},
         }
         self.text_message = build_notification_message(self.processed)
