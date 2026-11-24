@@ -110,6 +110,19 @@ PROVIDER_TYPES: dict[str, dict[str, Any]] = {
     if str(provider.get("type") or "").strip()
 }
 
+# Gmail uses SMTP, which is available in the Python runtime.
+PROVIDER_TYPES["gmail"] = {
+    "label": "Gmail",
+    "description": "通过 Gmail SMTP 发送邮件。收件地址默认使用发件账号。",
+    "envId": "gmail-env",
+    "envVars": {"email": "GMAIL_EMAIL", "app_password": "GMAIL_APP_PASSWORD", "to": "GMAIL_TO"},
+    "fields": [
+        {"name": "email", "label": "Gmail 发件地址", "required": True, "secret": True},
+        {"name": "app_password", "label": "Google 应用专用密码", "required": True, "secret": True},
+        {"name": "to", "label": "收件地址", "secret": True},
+    ],
+}
+
 
 def provider_spec(provider_type: str) -> dict[str, Any]:
     return PROVIDER_TYPES.get(provider_type, {})
